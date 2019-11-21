@@ -1,4 +1,6 @@
 import tensorflow as tf
+
+from modules.tensorboard import TensorboardManager
 from shakespeare_model import ShakespeareModel
 from modules.infrastructure import InfrastructureService
 from modules.configuration import ConfigurationProvider
@@ -6,9 +8,10 @@ from modules.datasets import DatasetManager
 from training_supervisor import TrainingSupervisor
 
 cfg = ConfigurationProvider.CreateConfiguration()
+tensorboardManager = TensorboardManager(cfg)
 infrastructureService = InfrastructureService(cfg)
 datasetManager = DatasetManager(cfg)
-trainingSupervisor = TrainingSupervisor(cfg)
+trainingSupervisor = TrainingSupervisor(cfg, tensorboardManager)
 
 infrastructureService.SetupTensorflowForGpuMode()
 infrastructureService.SetupTensorboard()
