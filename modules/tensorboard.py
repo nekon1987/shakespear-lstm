@@ -7,7 +7,8 @@ class TensorboardManager():
         self.configuration = configuration
         self.graph_stored = False
 
-    def start_tensorboard_trace(self):
+
+    def start_tensorboard_graph_trace(self):
         tf.summary.trace_on(graph=True, profiler=True)
 
     def commit_tensorboard_graph_trace(self, name):

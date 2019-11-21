@@ -6,7 +6,7 @@ class ConfigurationProvider(object):
     def CreateConfiguration():
         configuration = Configuration()
         configuration.input_text_file_path = "input_data\\shakespeare.txt"
-        configuration.number_of_epochs = 2
+        configuration.number_of_epochs = 40
         configuration.batch_size = 5000
         configuration.buffer_size = 20000
         configuration.embedding_dim = 100
