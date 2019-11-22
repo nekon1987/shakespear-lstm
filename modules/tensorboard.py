@@ -9,7 +9,8 @@ class TensorboardManager():
 
 
     def start_tensorboard_graph_trace(self):
-        tf.summary.trace_on(graph=True, profiler=True)
+        if not self.graph_stored:
+            tf.summary.trace_on(graph=True, profiler=True)
 
     def commit_tensorboard_graph_trace(self, name):
         if not self.graph_stored:

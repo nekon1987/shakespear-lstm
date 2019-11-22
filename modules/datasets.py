@@ -34,4 +34,4 @@ class DatasetManager(object):
         return [self.tokenizer.word_index[word]]
 
     def NumberToWord(self, numericalIndex):
-        return [self.tokenizer.index_word[numericalIndex]]
+        return self.tokenizer.index_word[numericalIndex]

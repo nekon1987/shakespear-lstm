@@ -12,6 +12,7 @@ class TrainingSupervisor():
         self.tensorboardManager = tensorboardManager
         self.checkpoint = None
         self.optimizer = tf.keras.optimizers.Adam()
+        self.temp_lstm_hidden_state = None
 
 
     def loss_function(self, labels, logits):
@@ -48,7 +49,7 @@ class TrainingSupervisor():
         with tf.name_scope("step_scope"):
             with tf.GradientTape() as tape:
 
-                predictions = model(input)  # passing to itself? TODO
+                predictions, self.temp_lstm_hidden_state = model(input, self.temp_lstm_hidden_state)  # passing to itself? TODO
                 target = tf.reshape(target, (-1,))
                 loss = self.loss_function(target, predictions)
 

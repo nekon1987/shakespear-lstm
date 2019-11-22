@@ -23,22 +23,14 @@ class ShakespeareModel(tf.keras.Model):
 
 
     @tf.function
-    def call(self, inputs):
-        Logger.Log("input shape: {}".format(inputs.shape))
+    def call(self, inputs, previous):
         inputs = self.embedding(inputs)
-        Logger.Log("embedding shape: {}".format(inputs.shape))
-        result = self.lstm(inputs, self.previous_states)
+        result = self.lstm(inputs, previous)
         output = result[0]
-        Logger.Log("embedding shape: {}".format(output.shape))
 
         output = tf.reshape(output, (-1, output.shape[2]))
         x = self.fc(output)
 
-        Logger.Log("embedding shape: {}".format(x.shape))
+        previous_states = result[1:]
 
-
-        #previous_states = result[1:]
-        #self.previous_states = previous_states
-        # TODO - update LSTM !!!
-
-        return x
+        return x, previous_states

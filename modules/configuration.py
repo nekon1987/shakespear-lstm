@@ -6,7 +6,7 @@ class ConfigurationProvider(object):
     def CreateConfiguration():
         configuration = Configuration()
         configuration.input_text_file_path = "input_data\\shakespeare.txt"
-        configuration.number_of_epochs = 40
+        configuration.number_of_epochs = 100
         configuration.batch_size = 5000
         configuration.buffer_size = 20000
         configuration.embedding_dim = 100
@@ -20,7 +20,7 @@ class ConfigurationProvider(object):
         # https://www.tensorflow.org/tutorials/text/text_generation
         # Start tensorboard server https://github.com/tensorflow/tensorboard/blob/master/README.md
         # https://www.tensorflow.org/tensorboard/r1/graphs
-        #  https://www.tensorflow.org/tensorboard/r1/summaries
+        # https://www.tensorflow.org/tensorboard/r1/summaries
 
         Logger.Log('Configuration created')
         return configuration
