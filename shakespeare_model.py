@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 from modules.diagnostics import Logger
 from modules.configuration import ConfigurationProvider
@@ -10,27 +11,42 @@ class ShakespeareModel(tf.keras.Model):
         self.units = units
         self.batch_size = batch_size
 
-        self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim, input_length=5)
+        self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim, input_length=5, name='embedding-layer')
 
         self.lstm = tf.keras.layers.LSTM(self.units,
                                        return_sequences=True,
                                        return_state=True,
                                        recurrent_activation='sigmoid',
-                                       recurrent_initializer='glorot_uniform')
+                                       recurrent_initializer='glorot_uniform',
+                                       name='lstm-layer')
 
-        self.fc = tf.keras.layers.Dense(vocab_size)
+        self.fc = tf.keras.layers.Dense(vocab_size, name='dense-layer')
         self.previous_states = None
 
+    def print_diagnostics(self):
+        def print_parameters(prefix, array):
+            if len(array) > 0:
+                print('{}) kernel: {} recu-kernel: {} bias: {}'.format(
+                    prefix,
+                    np.average(array[0].numpy()),
+                    np.average(array[1].numpy()),
+                    np.average(array[2].numpy())))
+
+        print_parameters('TV', self.lstm.trainable_variables)
+        print_parameters('TW', self.lstm.trainable_weights)
+        print_parameters('V', self.lstm.variables)
+        print_parameters('W', self.lstm.weights)
 
     @tf.function
     def call(self, inputs, previous):
-        inputs = self.embedding(inputs)
-        result = self.lstm(inputs, previous)
-        output = result[0]
+        embeddedInput = self.embedding(inputs)
 
-        output = tf.reshape(output, (-1, output.shape[2]))
-        x = self.fc(output)
+        lstmOutput = self.lstm(embeddedInput, previous)
+        lstmPrediction = lstmOutput[0]
 
-        previous_states = result[1:]
+        lstmPrediction = tf.reshape(lstmPrediction, (-1, lstmPrediction.shape[2]))
+        finalPrediction = self.fc(lstmPrediction)
 
-        return x, previous_states
+        previous_states = lstmOutput[1:]
+
+        return finalPrediction, previous_states
