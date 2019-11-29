@@ -8,13 +8,13 @@ from modules.datasets import DatasetManager
 from training_supervisor import TrainingSupervisor
 
 cfg = ConfigurationProvider.CreateConfiguration()
-tensorboardManager = TensorboardManager(cfg)
+tensorboardManager = TensorboardManager(cfg) #todo naming consistency
 infrastructureService = InfrastructureService(cfg)
 datasetManager = DatasetManager(cfg)
 trainingSupervisor = TrainingSupervisor(cfg, tensorboardManager)
 
 infrastructureService.SetupTensorflowForGpuMode()
-infrastructureService.SetupTensorboard()
+tensorboardManager.SetupTensorboard()
 vocabulary_size, training_dataset = datasetManager.CreateTrainingSet()
 
 model = ShakespeareModel(vocabulary_size, cfg.embedding_dim, cfg.units, cfg.batch_size)
@@ -22,6 +22,7 @@ model = ShakespeareModel(vocabulary_size, cfg.embedding_dim, cfg.units, cfg.batc
 trainingSupervisor.configure_checkpoints(model)
 trainingSupervisor.train_model(model, training_dataset)
 trainingSupervisor.restore_latest()
+
 
 # Predict
 
