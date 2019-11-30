@@ -26,39 +26,47 @@ trainingSupervisor.restore_latest()
 
 # Predict
 
-def test_model(start_string):
-    input_eval = datasetManager.WordToNumber(start_string)
-    input_eval = tf.expand_dims(input_eval, 0)
-    text_generated = ''
-    hidden = [tf.zeros((1, cfg.units))]
-    #https://machinetalk.org/2019/03/29/neural-machine-translation-with-attention-mechanism/
-    predictions, previous_state = model(input_eval, None) # why empties - we are not learning? TODO
-    predicted_id = tf.argmax(predictions[-1]).numpy()
-    text_generated += " " + datasetManager.NumberToWord(predicted_id)
-    print(start_string + text_generated)
+def test_model(start_string, length_of_sequence_to_Generate):
+    def generate_single_word(phrase):
+        input_eval = datasetManager.WordToNumber(phrase)
+        input_eval = tf.expand_dims(input_eval, 0)
+        #https://machinetalk.org/2019/03/29/neural-machine-translation-with-attention-mechanism/
+        predictions, previous_state = model(input_eval, None) # why empties - we are not learning? TODO
+        predicted_id = tf.argmax(predictions[-1]).numpy()
+        return datasetManager.NumberToWord(predicted_id)
 
-test_model('back')
-test_model('against')
-test_model('but')
-test_model('he')
-test_model('that')
-test_model('for')
-test_model('was')
-test_model('we')
-test_model('to')
-test_model('partly')
-test_model('cannot')
-test_model('always')
-test_model('they')
-test_model('most')
-test_model('not')
-test_model('natural')
-test_model('all')
-test_model('how')
-test_model('their')
-test_model('great')
-test_model('stiff')
-test_model('must')
-test_model('make')
+    last_generated_word = start_string
+    sentence = start_string
+    for i in range(length_of_sequence_to_Generate):
+        last_generated_word = generate_single_word(last_generated_word)
+        sentence += ' ' + last_generated_word
+
+    print(sentence)
+
+test_model('back', 8)
+test_model('against', 8)
+test_model('but', 8)
+test_model('he', 8)
+test_model('that', 8)
+test_model('for', 8)
+test_model('was', 8)
+test_model('we', 8)
+test_model('to', 8)
+test_model('partly', 8)
+test_model('cannot', 8)
+test_model('always', 8)
+test_model('they', 8)
+test_model('most', 8)
+test_model('not', 8)
+test_model('natural', 8)
+test_model('all', 8)
+test_model('how', 8)
+test_model('their', 8)
+test_model('great', 8)
+test_model('stiff', 8)
+test_model('must', 8)
+test_model('make', 8)
+
+
 
 test_model('make')

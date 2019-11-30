@@ -20,6 +20,8 @@ class ShakespeareModel(tf.keras.Model):
                                        recurrent_initializer='glorot_uniform',
                                        name='lstm-layer')
 
+        self.dropout = tf.keras.layers.Dropout(0.5)
+
         self.fc = tf.keras.layers.Dense(vocab_size, name='dense-layer')
         self.previous_states = None
 
@@ -45,7 +47,10 @@ class ShakespeareModel(tf.keras.Model):
         lstmPrediction = lstmOutput[0]
 
         lstmPrediction = tf.reshape(lstmPrediction, (-1, lstmPrediction.shape[2]))
-        finalPrediction = self.fc(lstmPrediction)
+
+        dropped = self.dropout(lstmPrediction)
+
+        finalPrediction = self.fc(dropped)
 
         previous_states = lstmOutput[1:]
 

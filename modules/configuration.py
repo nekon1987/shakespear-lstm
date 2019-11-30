@@ -6,13 +6,14 @@ class ConfigurationProvider(object):
     def CreateConfiguration():
         configuration = Configuration()
         configuration.input_text_file_path = "input_data\\shakespeare.txt"
-        configuration.number_of_epochs = 120
-        configuration.batch_size = 15000
-        configuration.buffer_size = 20000
-        configuration.embedding_dim = 100
-        configuration.units = 512
+        configuration.number_of_epochs = 2500
+        configuration.batch_size = 10000
+        configuration.buffer_size = 10000
+        configuration.embedding_dim = 110
+        configuration.units = 600
         configuration.tensorboard_logs_dir = 'logs\\tensorboard'
         configuration.checkpoint_dir = 'logs\\training_checkpoints'
+        configuration.early_stop_if_no_improvement_epoch_limit = 0
 
         # https://www.tensorflow.org/tensorboard/migrate
         # https://www.tensorflow.org/tutorials/text/text_generation
@@ -34,3 +35,4 @@ class Configuration(object):
         self.units = -1
         self.tensorboard_logs_dir = ''
         self.checkpoint_dir = ''
+        self.early_stop_if_no_improvement_epoch_limit = None

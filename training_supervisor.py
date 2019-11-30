@@ -1,7 +1,7 @@
-import time
+import time, sys, os
 from datetime import datetime
-import os
 import tensorflow as tf
+import numpy as np
 from modules.configuration import Configuration
 from modules.tensorboard import TensorboardManager
 
@@ -13,10 +13,21 @@ class TrainingSupervisor():
         self.checkpoint = None
         self.optimizer = tf.keras.optimizers.Adam()
         self.temp_lstm_hidden_state = None
+        self.network_not_improving_epochs_counter = 0
+        self.network_lowest_loss_value = sys.maxsize
 
+    def should_early_stop_epoch_update(self, current_loss):
+        if(current_loss.numpy() > self.network_lowest_loss_value):
+            self.network_not_improving_epochs_counter += 1
+        else:
+            self.network_lowest_loss_value = current_loss.numpy()
+            self.network_not_improving_epochs_counter = 0
+
+        print('Lower Loss {:.4f} Not improved for: {} epochs'.format(self.network_lowest_loss_value, self.network_not_improving_epochs_counter))
+        return self.network_not_improving_epochs_counter >= self.configuration.early_stop_if_no_improvement_epoch_limit
 
     def loss_function(self, labels, logits):
-        return tf.nn.sparse_softmax_cross_entropy_with_logits(labels, logits)
+        return tf.nn.sparse_softmax_cross_entropy_with_logits(labels, logits, name = 'Loss Function')
 
     def configure_checkpoints(self, model):
         self.checkpoint = tf.train.Checkpoint(optimizer=self.optimizer, model=model)
@@ -40,13 +51,14 @@ class TrainingSupervisor():
 
                 mean_loss = tf.math.reduce_mean(loss)
                 tf.summary.scalar('mean batch loss', mean_loss, step=epoch)
-                print('Epoch {} Took: {} Loss {:.4f}'.format(epoch + 1, time.time() - start, mean_loss))
+                print('Epoch {} Took: {:.2f} Loss {:.4f}'.format(epoch + 1, time.time() - start, mean_loss))
 
-                if (epoch + 1) % 3 == 0:
+                if (epoch + 1) % 10 == 0:
                     self.save_checkpoint("ckpt_{epoch}")
 
-            writer.flush()
-            self.save_checkpoint("final")
+                if self.should_early_stop_epoch_update(mean_loss):
+                    self.save_model(model)
+                    return
 
     #@tf.function
     def step(self, model, input, target):
@@ -54,7 +66,8 @@ class TrainingSupervisor():
 
         with tf.GradientTape() as tape:
 
-            predictions, self.temp_lstm_hidden_state = model(input, self.temp_lstm_hidden_state)  # passing to itself? TODO
+            predictions, self.temp_lstm_hidden_state = model(input, self.temp_lstm_hidden_state)
+
             target = tf.reshape(target, (-1,))
             loss = self.loss_function(target, predictions)
             grads = tape.gradient(loss, model.variables)
@@ -64,6 +77,15 @@ class TrainingSupervisor():
             self.log_summaries(model, grads, loss, predictions, self.temp_lstm_hidden_state)
 
             return loss
+
+    def save_model(self, model):
+        test_descriptive_label = datetime.now().strftime(
+            "%Y%m%d%H%M%S") + '-' + 'shapespear-lstm-' + str(self.network_lowest_loss_value)
+        results_directory = os.getcwd() + '\\' + 'output_model\\'
+        os.mkdir(results_directory + test_descriptive_label)
+        model_file_path = results_directory + test_descriptive_label + '\\' + test_descriptive_label + '.weights'
+        model.save_weights(model_file_path)
+        print('Saved model: ' + test_descriptive_label)
 
     def log_summaries(self, model, grads, loss, predictions, hidden_state):
         return
